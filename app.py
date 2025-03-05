@@ -7,34 +7,74 @@ class ToDoApp(ft.Column):
         super().__init__()
         self.page = page
         self.new_task = ft.TextField(hint_text="O que precisas fazer?", expand = True)
-        self.tasks_view = ft.Column()
+        self.tasks = ft.Column()
+        
+        self.filter = ft.Tabs(
+            selected_index=0,
+            on_change=self.update_view,
+            tabs=[ft.Tab(text="all"), ft.Tab(text="active"), ft.Tab(text="completed")],
+        )
+        self.items_left = ft.Text("0 items left")
+        
         self.view = ft.SafeArea(
             ft.Column(
                 width=500,
                 controls=[
                     ft.Row(
+                        [ft.Text(value="To-Dos", theme_style=ft.TextThemeStyle.HEADLINE_MEDIUM)],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                    ),
+                    ft.Row(
                         controls=[
                             self.new_task, 
-                            ft.FloatingActionButton(icon=ft.Icons.ADD, on_click=self.add_clicked)
+                            ft.FloatingActionButton(icon=ft.Icons.ADD, on_click=self.add_task)
                         ],
                     ),
-                    self.tasks_view,
+                    self.filter,
+                    self.tasks,
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        controls=[
+                            self.items_left,
+                            ft.TextButton("Clear completed", on_click=self.clear_completed)
+                        ]
+                    ),
                 ],
             )
         )
         self.controls.append(self.view)
     
-    def add_clicked(self, e):
+    
+    def add_task(self, e):
         if self.new_task.value.strip():
-            task = Task(self.new_task.value, self.task_delete)
-            self.tasks_view.controls.append(task)
+            task = Task(self.new_task.value.strip(), self.update_view, self.remove_task)
+            self.tasks.controls.append(task)
             self.new_task.value = ""
-            self.page.update()
+            self.update_view()
+            
         
-    def task_delete(self, task):
-        self.tasks_view.controls.remove(task)
+    def remove_task(self, task):
+        self.tasks.controls.remove(task)
+        self.update_view()
+    
+    def clear_completed(self, e):
+        self.tasks.controls = [task for task in self.tasks.controls if not task.completed]
+        self.update_view()
+    
+    def update_view(self, e=None):
+        status = self.filter.tabs[self.filter.selected_index].text
+        count = 0
+        for task in self.tasks.controls:
+            task.visible = (
+                status == "all"
+                or (status == "active" and task.completed == False)
+                or (status == "completed" and task.completed)
+            )
+            if not task.completed:
+                count += 1
+        self.items_left.value = f"{count} active item(s) left"
         self.page.update()
-        
+
     
 def main(page: ft.Page):
     page.title="TO DO LIST"        

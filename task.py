@@ -1,11 +1,14 @@
 import flet as ft
 
 class Task(ft.Column):
-    def __init__(self, task_name, task_delete):
+    def __init__(self, task_name, task_status_change, task_delete):
         super().__init__()
+        self.completed = False
         self.task_name = task_name
+        self.task_status_change = task_status_change
         self.task_delete = task_delete
-        self.display_task = ft.Checkbox(value=False, label=self.task_name)
+        
+        self.display_task = ft.Checkbox(value=False, label=self.task_name, on_change=self.status_changed)
         self.edit_name = ft.TextField(expand=1)
         
         self.display_view = ft.Row(
@@ -30,8 +33,7 @@ class Task(ft.Column):
                 ),
             ],
         )
-
-        # Task Edit View (TextField + Save Button)
+        
         self.edit_view = ft.Row(
             visible=False,
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -59,10 +61,14 @@ class Task(ft.Column):
 
     def save_clicked(self, e):
         if self.edit_name.value.strip():
-            self.display_task.label = self.edit_name.value.strip()
+            self.display_task.label = self.edit_name.value.strip()        
         self.display_view.visible = True
         self.edit_view.visible = False
         self.update()
+        
+    def status_changed(self, e):
+        self.completed = self.display_task.value
+        self.task_status_change()
 
     def delete_clicked(self, e):
         self.task_delete(self)
