@@ -1,5 +1,6 @@
 import flet as ft
 from task import Task
+from storage import save_task, load_task
 
 
 class ToDoApp(ft.Column):
@@ -43,6 +44,17 @@ class ToDoApp(ft.Column):
             )
         )
         self.controls.append(self.view)
+        self.load_task_saved()
+        
+        
+    def load_task_saved(self):
+        tasking_loading = load_task(self.page)
+        for t in tasking_loading:
+            task = Task(t["nome"], self.update_view, self.remove_task)
+            task.completed = t["concluida"]
+            task.display_task.value = t["concluida"]
+            self.tasks.controls.append(task)
+        self.update_view()
     
     
     def add_task(self, e):
@@ -73,6 +85,7 @@ class ToDoApp(ft.Column):
             if not task.completed:
                 count += 1
         self.items_left.value = f"{count} active item(s) left"
+        save_task(self.page, self.tasks.controls)
         self.page.update()
 
     
