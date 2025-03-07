@@ -1,9 +1,10 @@
 import flet as ft
 from task import Task
-from storage import save_task, load_task
 
 
 class ToDoApp(ft.Column):
+    STORAGE_KEY = "tasks"
+    
     def __init__(self, page: ft.Page):
         super().__init__()
         self.page = page
@@ -44,18 +45,8 @@ class ToDoApp(ft.Column):
             )
         )
         self.controls.append(self.view)
-        self.load_task_saved()
+        self.load_tasks()
         
-        
-    def load_task_saved(self):
-        tasking_loading = load_task(self.page)
-        for t in tasking_loading:
-            task = Task(t["nome"], self.update_view, self.remove_task)
-            task.completed = t["concluida"]
-            task.display_task.value = t["concluida"]
-            self.tasks.controls.append(task)
-        self.update_view()
-    
     
     def add_task(self, e):
         if self.new_task.value.strip():
@@ -63,15 +54,18 @@ class ToDoApp(ft.Column):
             self.tasks.controls.append(task)
             self.new_task.value = ""
             self.update_view()
+            self.save_tasks()
             
         
     def remove_task(self, task):
         self.tasks.controls.remove(task)
         self.update_view()
+        self.save_tasks()
     
     def clear_completed(self, e):
         self.tasks.controls = [task for task in self.tasks.controls if not task.completed]
         self.update_view()
+        self.save_tasks()
     
     def update_view(self, e=None):
         status = self.filter.tabs[self.filter.selected_index].text
@@ -85,10 +79,15 @@ class ToDoApp(ft.Column):
             if not task.completed:
                 count += 1
         self.items_left.value = f"{count} active item(s) left"
-        save_task(self.page, self.tasks.controls)
         self.page.update()
 
-    
+
+    def save_tasks(self):
+        tasks_data = [{"name": task.display_task.label, "completed": task.completed} for task in self.tasks.controls]
+        self.page.client_storage.set(self.STORAGE_KEY, json.dumps(tasks_data))
+        
+        
+        
 def main(page: ft.Page):
     page.title="TO DO LIST"        
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
