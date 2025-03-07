@@ -1,5 +1,6 @@
 import flet as ft
 from task import Task
+import json
 
 
 class ToDoApp(ft.Column):
@@ -85,7 +86,19 @@ class ToDoApp(ft.Column):
     def save_tasks(self):
         tasks_data = [{"name": task.display_task.label, "completed": task.completed} for task in self.tasks.controls]
         self.page.client_storage.set(self.STORAGE_KEY, json.dumps(tasks_data))
-        
+    
+    
+    def load_tasks(self):
+        data = self.page.client_storage.get(self.STORAGE_KEY)
+        if data:
+            tasks_data = json.loads(data)
+            for task_info in tasks_data:
+                task = Task(task_info["name"], self.update_view, self.remove_task)
+                task.completed = task_info["completed"]
+                task.display_task.value = task.completed
+                self.tasks.controls.append(task)
+            self.update_view()
+            
         
         
 def main(page: ft.Page):
