@@ -85,13 +85,13 @@ class ToDoApp(ft.Column):
 
     def save_tasks(self):
         tasks_data = [{"name": task.display_task.label, "completed": task.completed} for task in self.tasks.controls]
-        self.page.client_storage.set(self.STORAGE_KEY, json.dumps(tasks_data))
+        self.page.client_storage.set(self.STORAGE_KEY, tasks_data)
     
     
     def load_tasks(self):
-        data = self.page.client_storage.get(self.STORAGE_KEY)
-        if data:
-            tasks_data = json.loads(data)
+        tasks_data = self.page.client_storage.get(self.STORAGE_KEY)
+        if tasks_data:
+            # tasks_data = json.loads(data)
             for task_info in tasks_data:
                 task = Task(task_info["name"], self.update_view, self.remove_task)
                 task.completed = task_info["completed"]
@@ -109,4 +109,4 @@ def main(page: ft.Page):
     todo = ToDoApp(page)
     page.add(todo)
     
-ft.app(target=main, view=ft.WEB_BROWSER)
+ft.app(target=main, view=ft.WEB_BROWSER, port=8080)
