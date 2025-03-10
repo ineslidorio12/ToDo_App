@@ -1,7 +1,8 @@
 import flet as ft
 from task import Task
+from styles import NEW_TASK_STYLE, ADD_BUTTON_STYLE
+from encrypt_decrypt import encrypt_data, decrypt_data
 import json
-
 
 class ToDoApp(ft.Column):
     STORAGE_KEY = "tasks"
@@ -9,7 +10,7 @@ class ToDoApp(ft.Column):
     def __init__(self, page: ft.Page):
         super().__init__()
         self.page = page
-        self.new_task = ft.TextField(hint_text="O que precisas fazer?", expand = True)
+        self.new_task = ft.TextField(hint_text="O que precisas fazer?", expand = True, **NEW_TASK_STYLE)
         self.tasks = ft.Column()
         
         self.filter = ft.Tabs(
@@ -30,7 +31,7 @@ class ToDoApp(ft.Column):
                     ft.Row(
                         controls=[
                             self.new_task, 
-                            ft.FloatingActionButton(icon=ft.Icons.ADD, on_click=self.add_task)
+                            ft.FloatingActionButton(icon=ft.Icons.ADD, on_click=self.add_task, **ADD_BUTTON_STYLE)
                         ],
                     ),
                     self.filter,
@@ -85,20 +86,27 @@ class ToDoApp(ft.Column):
 
     def save_tasks(self):
         tasks_data = [{"name": task.display_task.label, "completed": task.completed} for task in self.tasks.controls]
-        self.page.client_storage.set(self.STORAGE_KEY, tasks_data)
+        tasks_json = json.dumps(tasks_data)
+        
+        encrypted_data = encrypt_data(tasks_json)
+        self.page.client_storage.set(self.STORAGE_KEY, encrypted_data)
     
     
     def load_tasks(self):
-        tasks_data = self.page.client_storage.get(self.STORAGE_KEY)
-        if tasks_data:
-            # tasks_data = json.loads(data)
-            for task_info in tasks_data:
-                task = Task(task_info["name"], self.update_view, self.remove_task)
-                task.completed = task_info["completed"]
-                task.display_task.value = task.completed
-                self.tasks.controls.append(task)
-            self.update_view()
-            
+        encrypted_data = self.page.client_storage.get(self.STORAGE_KEY)
+        if encrypted_data:
+            try:
+                decrypted_data = decrypt_data(encrypted_data)
+                tasks_data = json.loads(decrypted_data)
+                
+                for task_info in tasks_data:
+                    task = Task(task_info["name"], self.update_view, self.remove_task)
+                    task.completed = task_info["completed"]
+                    task.display_task.value = task.completed
+                    self.tasks.controls.append(task)
+                self.update_view()
+            except Exception as e:
+                print("Erro carregamento de tarefas:", e)
         
         
 def main(page: ft.Page):
@@ -109,4 +117,4 @@ def main(page: ft.Page):
     todo = ToDoApp(page)
     page.add(todo)
     
-ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=8080)
+ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=5000)
