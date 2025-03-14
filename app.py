@@ -2,6 +2,7 @@ import flet as ft
 from task import Task
 from styles import NEW_TASK_STYLE, ADD_BUTTON_STYLE
 from encrypt_decrypt import encrypt_data, decrypt_data
+from github import GitHubAuth
 
 class ToDoApp(ft.Column):
     STORAGE_KEY = "tasks"
@@ -112,10 +113,11 @@ class ToDoApp(ft.Column):
 def main(page: ft.Page):
     page.title="TO DO LIST"        
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.update()
     
+    GitHubAuth(page)
     todo = ToDoApp(page)
     page.add(todo)
+    page.update()
     
 ft.app(target=main, view=ft.WEB_BROWSER, port=5000)
 # ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=5000)

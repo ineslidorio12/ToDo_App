@@ -1,6 +1,6 @@
 import os
 import flet as ft
-from flet import ElevatedButton, LoginEvent, Page
+from flet import ElevatedButton, LoginEvent, Page, Row
 from flet.auth.providers import GitHubOAuthProvider
 
 class GitHubAuth:
@@ -19,7 +19,11 @@ class GitHubAuth:
         self.page.on_logout = self.on_logout
 
         self.toggle_login_buttons()
-        self.page.add(self.login_button, self.logout_button)
+        
+        self.auth_container = Row(controls=[self.login_button, self.logout_button],
+                                  alignment=ft.MainAxisAlignment.END)
+        
+        self.page.add(self.auth_container)
 
 
     def login_button_click(self, e):
