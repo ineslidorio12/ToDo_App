@@ -2,7 +2,6 @@ import flet as ft
 from task import Task
 from styles import NEW_TASK_STYLE, ADD_BUTTON_STYLE
 from encrypt_decrypt import encrypt_data, decrypt_data
-import json
 
 class ToDoApp(ft.Column):
     STORAGE_KEY = "tasks"
@@ -86,18 +85,19 @@ class ToDoApp(ft.Column):
 
     def save_tasks(self):
         tasks_data = [{"name": task.display_task.label, "completed": task.completed} for task in self.tasks.controls]
-        tasks_json = json.dumps(tasks_data)
+        tasks_str = str(tasks_data)        
+        encrypted_tasks = encrypt_data(tasks_str)
         
-        encrypted_data = encrypt_data(tasks_json)
-        self.page.client_storage.set(self.STORAGE_KEY, encrypted_data)
+        self.page.client_storage.set(self.STORAGE_KEY, encrypted_tasks)
     
     
     def load_tasks(self):
         encrypted_data = self.page.client_storage.get(self.STORAGE_KEY)
+        
         if encrypted_data:
             try:
                 decrypted_data = decrypt_data(encrypted_data)
-                tasks_data = json.loads(decrypted_data)
+                tasks_data = eval(decrypted_data)
                 
                 for task_info in tasks_data:
                     task = Task(task_info["name"], self.update_view, self.remove_task)
@@ -117,4 +117,5 @@ def main(page: ft.Page):
     todo = ToDoApp(page)
     page.add(todo)
     
-ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=5000)
+ft.app(target=main, view=ft.WEB_BROWSER, port=5000)
+# ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=5000)

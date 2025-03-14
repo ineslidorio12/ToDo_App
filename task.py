@@ -1,5 +1,6 @@
 import flet as ft
 
+
 class Task(ft.Column):
     def __init__(self, task_name, task_status_change, task_delete):
         super().__init__()
