@@ -9,7 +9,7 @@ class GitHubAuth:
         self.provider = GitHubOAuthProvider(
             client_id=os.getenv("GITHUB_CLIENT_ID"),
             client_secret=os.getenv("GITHUB_CLIENT_SECRET"),
-            redirect_url="http://localhost:5000/oauth_callback",
+            redirect_url="https://d0c29222-8ba6-46ac-b9a9-1e65b52dd837-00-36ue5xjmvklba.worf.replit.dev/oauth_callback",
         )
 
         self.login_button = ElevatedButton("Login with GitHub", on_click=self.login_button_click)
