@@ -1,5 +1,4 @@
 import flet as ft
-from page import LoginPage
 from task import Task
 from styles import NEW_TASK_STYLE, ADD_BUTTON_STYLE
 from encrypt_decrypt import encrypt_data, decrypt_data
@@ -21,7 +20,7 @@ class ToDoApp(ft.Column):
                 ft.Tab(text="all"), 
                 ft.Tab(text="active"), 
                 ft.Tab(text="completed")
-            ],
+                ],
         )
         self.items_left = ft.Text("0 items left")
         
@@ -119,17 +118,10 @@ def main(page: ft.Page):
     page.title="TO DO LIST"        
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     
-    def start_todo_app():
-        page.controls.clear()
-        todo = ToDoApp(page)
-        page.add(todo)
-        page.update()
-    
-    login_page = LoginPage(page, start_todo_app)
-    page.add(login_page)
+    GitHubAuth(page)
+    todo = ToDoApp(page)
+    page.add(todo)
     page.update()
-
-
     
 ft.app(target=main, view=ft.WEB_BROWSER, port=5000)
 # ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=5000)
