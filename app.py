@@ -1,29 +1,32 @@
 import flet as ft
+from github import GitHubAuth
 from task import Task
 from styles import NEW_TASK_STYLE, ADD_BUTTON_STYLE
 from encrypt_decrypt import encrypt_data, decrypt_data
-from github import GitHubAuth
+
+
 
 class ToDoApp(ft.Column):
     STORAGE_KEY = "tasks"
-    
+
     def __init__(self, page: ft.Page):
         super().__init__()
         self.page = page
         self.new_task = ft.TextField(hint_text="O que precisas fazer?", expand = True, **NEW_TASK_STYLE)
         self.tasks = ft.Column()
-        
+
         self.filter = ft.Tabs(
             selected_index=0,
             on_change=self.update_view,
             tabs=[
                 ft.Tab(text="all"), 
                 ft.Tab(text="active"), 
-                ft.Tab(text="completed")
-                ],
+                ft.Tab(text="completed"),
+            ],
+            **TAB_STYLE,
         )
         self.items_left = ft.Text("0 items left")
-        
+
         self.view = ft.SafeArea(
             ft.Column(
                 width=500,
@@ -35,7 +38,7 @@ class ToDoApp(ft.Column):
                     ft.Row(
                         controls=[
                             self.new_task, 
-                            ft.FloatingActionButton(icon=ft.Icons.ADD, on_click=self.add_task, **ADD_BUTTON_STYLE)
+                            ft.FloatingActionButton(icon=ft.Icons.ADD, on_click=self.add_task, **ADD_BUTTON_STYLE),
                         ],
                     ),
                     self.filter,
@@ -52,8 +55,8 @@ class ToDoApp(ft.Column):
         )
         self.controls.append(self.view)
         self.load_tasks()
-        
-    
+
+
     def add_task(self, e):
         if self.new_task.value.strip():
             task = Task(self.new_task.value.strip(), self.update_view, self.remove_task)
@@ -61,18 +64,18 @@ class ToDoApp(ft.Column):
             self.new_task.value = ""
             self.update_view()
             self.save_tasks()
-            
-        
+
+
     def remove_task(self, task):
         self.tasks.controls.remove(task)
         self.update_view()
         self.save_tasks()
-    
+
     def clear_completed(self, e):
         self.tasks.controls = [task for task in self.tasks.controls if not task.completed]
         self.update_view()
         self.save_tasks()
-    
+
     def update_view(self, e=None):
         status = self.filter.tabs[self.filter.selected_index].text
         count = 0
@@ -90,15 +93,14 @@ class ToDoApp(ft.Column):
 
     def save_tasks(self):
         tasks_data = [{"name": task.display_task.label, "completed": task.completed} for task in self.tasks.controls]
+
         tasks_str = str(tasks_data)        
         encrypted_tasks = encrypt_data(tasks_str)
-        
         self.page.client_storage.set(self.STORAGE_KEY, encrypted_tasks)
-    
-    
+
+
     def load_tasks(self):
         encrypted_data = self.page.client_storage.get(self.STORAGE_KEY)
-        
         if encrypted_data:
             try:
                 decrypted_data = decrypt_data(encrypted_data)
@@ -112,16 +114,16 @@ class ToDoApp(ft.Column):
                 self.update_view()
             except Exception as e:
                 print("Erro carregamento de tarefas:", e)
-        
-        
+
+
+
 def main(page: ft.Page):
     page.title="TO DO LIST"        
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    
+
     GitHubAuth(page)
     todo = ToDoApp(page)
     page.add(todo)
     page.update()
-    
-ft.app(target=main, view=ft.WEB_BROWSER, port=5000)
-# ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=5000)
+
+ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=8080)
