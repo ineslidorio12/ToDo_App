@@ -1,12 +1,5 @@
 import flet as ft
 
-ICON_STYLE = dict(
-    src="icon.png",
-    width=446,
-    height=481,
-)
-
-
 NEW_TASK_STYLE = dict(
     border_radius=20,
     bgcolor=ft.Colors.GREY_200,
