@@ -4,7 +4,16 @@ from task import Task
 from styles import NEW_TASK_STYLE, ADD_BUTTON_STYLE
 from encrypt_decrypt import encrypt_data, decrypt_data
 
+class FirstPage(ft.Column):
+    def __init__(self, page: ft.Page, on_authenticated):
+        super().__init__()
+        self.page = page
+        self.on_authenticated = on_authenticated
 
+        self.auth = GitHubAuth(self.page, self.on_authenticated)
+
+        if self.page.auth:
+            self.on_authenticated()
 
 class ToDoApp(ft.Column):
     STORAGE_KEY = "tasks"
@@ -23,7 +32,6 @@ class ToDoApp(ft.Column):
                 ft.Tab(text="active"), 
                 ft.Tab(text="completed"),
             ],
-            **TAB_STYLE,
         )
         self.items_left = ft.Text("0 items left")
 
@@ -105,7 +113,7 @@ class ToDoApp(ft.Column):
             try:
                 decrypted_data = decrypt_data(encrypted_data)
                 tasks_data = eval(decrypted_data)
-                
+
                 for task_info in tasks_data:
                     task = Task(task_info["name"], self.update_view, self.remove_task)
                     task.completed = task_info["completed"]
@@ -121,9 +129,15 @@ def main(page: ft.Page):
     page.title="TO DO LIST"        
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
 
-    GitHubAuth(page)
-    todo = ToDoApp(page)
-    page.add(todo)
+    def show_todo_app():
+        page.controls.clear()
+        todo = ToDoApp(page)
+        page.add(todo)
+        page.update()
+
+    first_page = FirstPage(page, show_todo_app)
+    page.add(first_page)
     page.update()
+
 
 ft.app(target=main, view=ft.WEB_BROWSER, host="0.0.0.0", port=8080)
